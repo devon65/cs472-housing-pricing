@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-START_YEAR = 1996
+START_YEAR = 2002
 END_YEAR = 2021
 MONTH_STRINGS = ["-01", "-02", "-03", "-04", "-05", "-06", "-07", "-08", "-09", "-10", "-11", "-12"]
 

@@ -24,10 +24,10 @@ def stack_data_by_date(housing_dataframe, area_key=METRO_AREA_KEY, make_files_by
                 month_values = np.matrix(housing_dataframe[month_str]).T
                 month_housing_data = np.array(np.concatenate((area_list, year_strings, month_strings, month_values), 1))
                 monthly_housing_data = average_across_column_index(month_housing_data, 0, 3)
-                np.concatenate(yearly_housing_data, monthly_housing_data)
+                yearly_housing_data.extend(monthly_housing_data)
                 if make_files_by_month:
                     write_matrix_to_csv(monthly_housing_data, headers, area_key + "_average_" + month_str + ".csv")
-        master_housing_data.append(yearly_housing_data)
+        master_housing_data.extend(yearly_housing_data)
         if make_files_by_year:
             write_matrix_to_csv(yearly_housing_data, headers, area_key + "_average_" + str(year) + ".csv")
     write_matrix_to_csv(master_housing_data, headers, area_key + "_average_all.csv")
@@ -47,7 +47,7 @@ def average_across_column_index(housing_data, unique_areas_index, values_to_aver
         area_average_datapoint = area_datapoints[0]
         area_average_datapoint[values_to_average_index] = average
         if average > 0:
-            averages_for_areas.append(area_average_datapoint)
+            averages_for_areas.append(area_average_datapoint.tolist())
     return averages_for_areas
 
 
