@@ -5,14 +5,14 @@ CITY_KEY = "City"
 STATE_KEY = "State"
 METRO_AREA_KEY = "Metro"
 COUNTY_KEY = "CountyName"
-START_YEAR = 1996
+START_YEAR = 1997
 END_YEAR = 2021
 MONTH_STRINGS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
 
 def stack_data_by_date(housing_dataframe, area_key=METRO_AREA_KEY, make_files_by_year=True, make_files_by_month=False): #area_key is the key by which to average data per month
     headers = ("AREA_NAME", "YEAR", "MONTH", "HOUSING_INDEX")
-    area_list = np.matrix(housing_dataframe[area_key]).T
+    area_list = combine_area_and_state_names(housing_dataframe, area_key)
     master_housing_data = []
     for year in range(START_YEAR, END_YEAR):
         year_strings = np.full((len(area_list), 1), year)
@@ -33,6 +33,18 @@ def stack_data_by_date(housing_dataframe, area_key=METRO_AREA_KEY, make_files_by
     write_matrix_to_csv(master_housing_data, headers, area_key + "_average_all.csv")
     return master_housing_data
 
+def combine_area_and_state_names(housing_dataframe, area_key):
+    area_list = housing_dataframe[area_key]
+    if area_key == STATE_KEY:
+        return np.array(np.matrix(area_list).T)
+
+    combined_names = []
+    state_list = housing_dataframe[STATE_KEY]
+    for area, state in zip(area_list, state_list):
+        combined_names.append([str(area) + ', ' + state + ' MSA'])
+
+    return np.array(combined_names)
+
 
 def average_across_column_index(housing_data, unique_areas_index, values_to_average_index):
     housing_data = np.array(housing_data)
@@ -42,7 +54,7 @@ def average_across_column_index(housing_data, unique_areas_index, values_to_aver
     averages_for_areas = []
     for area in unique_areas:
         area_datapoints = [datapoint for datapoint in housing_data if datapoint[unique_areas_index] == area]
-        vals_to_average = np.array(area_datapoints)[:, values_to_average_index]
+        vals_to_average = np.array(area_datapoints)[:, values_to_average_index].astype(float)
         average = np.nanmean(vals_to_average, dtype=float, axis=0).astype(int)
         area_average_datapoint = area_datapoints[0]
         area_average_datapoint[values_to_average_index] = average
