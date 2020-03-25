@@ -86,7 +86,10 @@ class HousingDataset():
     def iterate_as_numpy(self):
         for x in self:
             yield np.array(x)
-        raise StopIteration
+
+    def iterate_areas(self):
+        for x in self.data.groupby("AREA_NAME"):
+            yield (x[0], x[1].sort_values("YEAR"))
 
     def columns(self):
         return self.data.columns
