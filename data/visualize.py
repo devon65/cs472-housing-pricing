@@ -20,8 +20,18 @@ def scatter(data, cols=["A_MEAN", "HOUSING_INDEX"]):
     xlab = cols[0]
     ylab = cols[1]
     b, m = line = polyfit(data[xlab], data[ylab], 1)
+    qb, q1, q2 = q_line = polyfit(data[xlab], data[ylab], 2)
+    print(qb, q1, q2, np.square(data[xlab]).shape)
     plt.scatter(data[xlab], data[ylab])
-    plt.plot(data[xlab], b + m * data[xlab], '-')
+
+    y = b + m * data[xlab]
+    print(y.shape)
+    plt.plot(data[xlab], y, '-')
+    
+    y = qb + q1 * data[xlab] + q2 * np.square(data[xlab])
+    print(y.shape)
+    plt.plot(data[xlab], y, '-')
+
     plt.xlabel(xlab)
     plt.ylabel(ylab)
     plt.title(f"Scatter for {xlab} vs {ylab}")
