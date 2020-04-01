@@ -3,6 +3,9 @@ import numpy as np
 from enum import Enum
 import typing as t
 
+from data.datasets.zillow import Zillow
+from data.datasets.bls import BLS
+
 class Feature(Enum):
     AREA = "AREA_NAME"
     YEAR = "YEAR"
@@ -17,15 +20,7 @@ class HousingDataset():
         # 1. Ensure valid options 
         # 2. Ensure that CSV files exist else download
         # 3. Load and organize requested data
-        if HousingDataset.zillow is None:
-            zillow = pd.read_csv("data/Metro_average_all.csv")
-            # zillow["AREA_NAME"] = zillow["AREA_NAME"].str[:-4]
-            zillow["AREA_NAME"] = zillow["AREA_NAME"].str.strip()
-            zillow["AREA_NAME"] = zillow["AREA_NAME"].str[:-4].where(zillow["AREA_NAME"].str.endswith(" MSA"), zillow["AREA_NAME"])
-            HousingDataset.zillow = zillow
-        else:
-            zillow = HousingDataset.zillow
-
+        zillow = Zillow().load()
         self.zillow = zillow
 
         zillow_yearly_avg = zillow.groupby(["AREA_NAME", "YEAR"]).mean()
@@ -33,20 +28,7 @@ class HousingDataset():
 
         self.yearly_zillow = zillow_yearly_avg.reset_index().set_index(["AREA_NAME", "YEAR"])
 
-        # Remove MSA
-        if HousingDataset.bls is None:
-            bls_data = pd.read_csv("data/MSA_master_clean.csv").reset_index()
-            numeric_cols = ['YEAR', 'TOT_EMP', 'EMP_PRSE', 'H_MEAN', 'A_MEAN', 'MEAN_PRSE', 'H_PCT10', 'H_PCT25', 'H_MEDIAN', 'H_PCT75', 'H_PCT90', 'A_PCT10', 'A_PCT25', 'A_MEDIAN', 'A_PCT75', 'A_PCT90', 'ANNUAL', 'HOURLY']
-            
-            for col in numeric_cols:
-                bls_data[col] = pd.to_numeric(bls_data[col], errors="coerce")
-
-            bls_data["AREA_NAME"] = bls_data["AREA_NAME"].str.strip()
-            bls_data["AREA_NAME"] = bls_data["AREA_NAME"].str[:-4].where(bls_data["AREA_NAME"].str.endswith(" MSA"), bls_data["AREA_NAME"])
-            HousingDataset.bls = bls_data
-        else:
-            bls_data = HousingDataset.bls
-
+        bls_data = BLS().load()
         self.bls_data = bls_data
 
         desired_bls_cols = \
@@ -93,3 +75,21 @@ class HousingDataset():
 
     def columns(self):
         return self.data.columns
+
+    def iterate_areas_with_window(self, window_size:int=5):
+        for city, data in self.iterate_areas():
+            for window, years in HousingDataset._slide_window(data, window_size):
+                yield (city, years, window)
+
+    @staticmethod
+    def _slide_window(data:pd.DataFrame, window_size:int):
+        first_year = data["YEAR"].min()
+        last_year = data["YEAR"].max()
+        year_series = pd.DataFrame(range(first_year, last_year + 1), columns=["YEAR"]).set_index("YEAR")
+        data_with_consecutive_years = data.set_index("YEAR").join(year_series, how="outer")
+
+        for i in range(len(data_with_consecutive_years) - window_size):
+            begin_year = first_year + i
+            last_year = begin_year + window_size
+            yield ( data_with_consecutive_years[i:i+window_size], (begin_year, last_year) )
+
