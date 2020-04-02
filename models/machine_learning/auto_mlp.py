@@ -69,7 +69,7 @@ def train():
 
 if __name__ == "__main__":
     model, acc, rmse, data = train()
-    print(f"Accuracy: {acc}")
+    print(f"Accuracy: {acc}; RMSE: {rmse}")
 
 
 
