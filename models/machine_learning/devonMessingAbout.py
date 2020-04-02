@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from data.otherloader import HousingDataset as hd
+from data.loader import HousingDataset as hd
 import pandas as pd
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor as KNNRegressor
@@ -73,6 +73,7 @@ def sklearn_knn(dataset_frame):
     predictions = KNNRegressor(n_neighbors=3).fit(data, labels).predict(test_data)
     accuracy = MSE(test_labels, predictions) ** (1/2)
     print("Accuracy = [{:.4f}]".format(accuracy))
+    return accuracy
 
 # This modifies the data so that the differential makes the Salary data "year_differential" years OLDER than the housing data.
 # If you want it in reverse, feed in a negative number.
@@ -83,13 +84,25 @@ def divide_and_regroup_year_differential(dataset_frame, year_differential=0):
     salary_data['YEAR'] = salary_data['YEAR'] + year_differential
     return salary_data.merge(housing_data)
 
+def print_avg_accuracies(acc_avg_by_year_diffs):
+    for key, value in acc_avg_by_year_diffs.items():
+        print('Year diff: {:d}'.format(key))
+        print('Accuracy = [{:.4f}]'.format(np.average(value)))
+
 def main():
+    num_of_years = 7
+    num_of_trials = 100
     dataset = load_data("CS_job_correlation_select_values.csv")
-    for i in range(7):
+    acc_avg_by_year_diffs = {}
+    for year in range(num_of_years):
+        acc_avg_by_year_diffs[year] = []
+    for i in range(num_of_years):
         modified_dataset = divide_and_regroup_year_differential(dataset, i)
         print("Year Differential: {:d}".format(i))
-        sklearn_knn(modified_dataset)
-    x = 1
+        for trial in range(num_of_trials):
+            accuracy = sklearn_knn(modified_dataset)
+            acc_avg_by_year_diffs[i].append(accuracy)
+    print_avg_accuracies(acc_avg_by_year_diffs)
 
 if __name__=="__main__":
     main()
