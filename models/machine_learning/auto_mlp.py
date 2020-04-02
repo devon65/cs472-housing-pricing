@@ -23,27 +23,30 @@ def is_stranger(x):
     else:
         return False
 
-def train():
-    window_length = 5
-    data = hd(["43-0000"])
-    print("Dataset loaded.")
-    preloaded = [ o for o in data.iterate_areas_with_flat_window(window_length, make_target=True)]
+def train(data=None):
+    if data is None:
+        window_length = 5
+        data = hd(["43-0000"])
+        print("Dataset loaded.")
+        preloaded = [ o for o in data.iterate_areas_with_flat_window(window_length, make_target=True)]
 
-    filtered = filter(lambda d: is_x_years(d, window_length), preloaded)
+        filtered = filter(lambda d: is_x_years(d, window_length), preloaded)
 
-    col_names = [ "YEAR", "TOT_EMP", "H_MEDIAN" ]
-    train_cols = [ c for c in col_names ]
+        col_names = [ "YEAR", "TOT_EMP", "H_MEDIAN" ]
+        train_cols = [ c for c in col_names ]
 
-    for i in range(1, 4):
-        train_cols += [f"{c}_{i}" for c in col_names]
+        for i in range(1, 4):
+            train_cols += [f"{c}_{i}" for c in col_names]
 
-    prepped = [ prep_data(f, train_cols, "HOUSING_INDEX") for f in filtered ]
-    cleaned = filter(lambda x: not is_stranger(x[0]) and not np.isnan(x[1]), prepped)
-    inputs, targets = zip(*cleaned)
+        prepped = [ prep_data(f, train_cols, "HOUSING_INDEX") for f in filtered ]
+        cleaned = filter(lambda x: not is_stranger(x[0]) and not np.isnan(x[1]), prepped)
+        inputs, targets = zip(*cleaned)
 
-    train_inputs, test_inputs, train_targets, test_targets = train_test_split(inputs, targets, test_size=0.1)
-    print(f"Dataset prepped.")
-    print(f"Num training instances: {len(train_inputs)}")
+        train_inputs, test_inputs, train_targets, test_targets = train_test_split(inputs, targets, test_size=0.1)
+        print(f"Dataset prepped.")
+        print(f"Num training instances: {len(train_inputs)}")
+    else:
+        train_inputs, test_inputs, train_targets, test_targets = data
 
     train_inputs = np.array(np.concatenate([*train_inputs], axis=0))
     test_inputs = np.array(np.concatenate([*test_inputs], axis=0))
