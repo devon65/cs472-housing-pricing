@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from data.loader import HousingDataset as hd
+from data.otherloader import HousingDataset as hd
 import pandas as pd
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor as KNNRegressor
