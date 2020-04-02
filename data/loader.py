@@ -6,7 +6,6 @@ import typing as t
 from data.datasets.zillow import Zillow
 from data.datasets.bls import BLS
 
-
 class Feature(Enum):
     AREA = "AREA_NAME"
     YEAR = "YEAR"
@@ -80,12 +79,12 @@ class HousingDataset():
     def columns(self):
         return self.data.columns
 
-    def iterate_areas_with_window(self, window_size: int = 5):
+    def iterate_areas_with_window(self, window_size:int=5):
         for city, data in self.iterate_areas():
             for window, years in HousingDataset._slide_window(data, window_size):
                 yield (city, years, window)
 
-    def iterate_areas_with_flat_window(self, window_size: int = 5, make_target: bool = False):
+    def iterate_areas_with_flat_window(self, window_size:int=5, make_target:bool=False):
         for city, (first_year, last_year), data in self.iterate_areas_with_window(window_size):
             # import pdb; pdb.set_trace()
             data = data.reset_index().set_index("AREA_NAME")
@@ -102,7 +101,7 @@ class HousingDataset():
                 yield city, (first_year, last_year), join_builder
 
     @staticmethod
-    def _slide_window(data: pd.DataFrame, window_size: int):
+    def _slide_window(data:pd.DataFrame, window_size:int):
         first_year = data["YEAR"].min()
         last_year = data["YEAR"].max()
         year_series = pd.DataFrame(range(first_year, last_year + 1), columns=["YEAR"]).set_index("YEAR")
@@ -111,5 +110,5 @@ class HousingDataset():
         for i in range(len(data_with_consecutive_years) - window_size):
             begin_year = first_year + i
             last_year = begin_year + window_size - 1
-            yield (data_with_consecutive_years[i:i + window_size], (begin_year, last_year))
+            yield ( data_with_consecutive_years[i:i+window_size], (begin_year, last_year) )
 
