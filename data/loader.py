@@ -13,12 +13,15 @@ class HousingDataset():
     zillow = None
     bls = None
 
-    def __init__(self, occ_codes:t.List[str]):
+    def __init__(self, occ_codes:t.List[str],
+                 housing_data_path="data/Metro_average_all.csv",
+                 employment_data_path="data/MSA_master_clean.csv",
+                 desired_bls_cols=None): # When passing in your own desired BLS columns, "AREA_NAME" and "YEAR" are required
         # 1. Ensure valid options 
         # 2. Ensure that CSV files exist else download
         # 3. Load and organize requested data
         if HousingDataset.zillow is None:
-            zillow = pd.read_csv("data/Metro_average_all.csv")
+            zillow = pd.read_csv(housing_data_path)
             # zillow["AREA_NAME"] = zillow["AREA_NAME"].str[:-4]
             zillow["AREA_NAME"] = zillow["AREA_NAME"].str.strip()
             zillow["AREA_NAME"] = zillow["AREA_NAME"].str[:-4].where(zillow["AREA_NAME"].str.endswith(" MSA"), zillow["AREA_NAME"])
@@ -35,7 +38,7 @@ class HousingDataset():
 
         # Remove MSA
         if HousingDataset.bls is None:
-            bls_data = pd.read_csv("data/MSA_master_clean.csv").reset_index()
+            bls_data = pd.read_csv(employment_data_path).reset_index()
             numeric_cols = ['YEAR', 'TOT_EMP', 'EMP_PRSE', 'H_MEAN', 'A_MEAN', 'MEAN_PRSE', 'H_PCT10', 'H_PCT25', 'H_MEDIAN', 'H_PCT75', 'H_PCT90', 'A_PCT10', 'A_PCT25', 'A_MEDIAN', 'A_PCT75', 'A_PCT90', 'ANNUAL', 'HOURLY']
             
             for col in numeric_cols:
@@ -49,8 +52,11 @@ class HousingDataset():
 
         self.bls_data = bls_data
 
-        desired_bls_cols = \
-        ['YEAR', 'PRIM_STATE', 'AREA', 'AREA_NAME', 'TOT_EMP', 'EMP_PRSE', 'H_MEAN', 'A_MEAN', 'MEAN_PRSE', 'H_PCT10', 'H_PCT25', 'H_MEDIAN', 'H_PCT75', 'H_PCT90', 'A_PCT10', 'A_PCT25', 'A_MEDIAN', 'A_PCT75', 'A_PCT90', 'ANNUAL', 'HOURLY']
+        if not desired_bls_cols:
+            desired_bls_cols = \
+            ['YEAR', 'PRIM_STATE', 'AREA', 'AREA_NAME', 'TOT_EMP', 'EMP_PRSE', 'H_MEAN', 'A_MEAN', 'MEAN_PRSE',
+             'H_PCT10', 'H_PCT25', 'H_MEDIAN', 'H_PCT75', 'H_PCT90', 'A_PCT10', 'A_PCT25', 'A_MEDIAN', 'A_PCT75',
+             'A_PCT90', 'ANNUAL', 'HOURLY']
 
         join_builder = None
 
