@@ -36,10 +36,10 @@ def get_baseline_acc_all(data):
     for name, df in data.iterate_areas():
         for year in range(2004, 2018):
             if year in list(df['YEAR']) and year+1 in list(df['YEAR']):
-                x = df.loc[(df['YEAR'] == year)]['HOUSING_INDEX']
-                y = df.loc[(df['YEAR'] == year + 1)]['HOUSING_INDEX']
-
-                rmse = np.sqrt(mse(y, x))
+                x = df.loc[(df['YEAR'] == year)]['HOUSING_INDEX'].item()
+                y = df.loc[(df['YEAR'] == year + 1)]['HOUSING_INDEX'].item()
+                # import pdb; pdb.set_trace()
+                rmse = y - x
                 diff = float(x) / float(y)
 
                 rmse_list.append(rmse)
@@ -48,16 +48,17 @@ def get_baseline_acc_all(data):
                 indexes.append(float(x))
                 time_differences.append(float(y)-float(x))
 
-    print('Baseline all years:', np.mean(rmse_list), np.mean(diff_list))
+    print('Baseline all years:', np.sqrt(np.nanmean(np.square(rmse_list))), np.mean(diff_list))
+    return rmse_list
 
-    plt.subplot(121)
-    plt.plot(range(2004, 2018), indexes[:14])
-    plt.title('Original data')
-    plt.xlabel('Year')
+    # plt.subplot(121)
+    # plt.plot(range(2004, 2018), indexes[:14])
+    # plt.title('Original data')
+    # plt.xlabel('Year')
 
-    plt.subplot(122)
-    plt.plot(range(2004, 2018), time_differences[:14])
-    plt.title('Time-differenced data')
-    plt.xlabel('Year')
-    plt.ylim(-20000, 20000)
-    plt.show()
+    # plt.subplot(122)
+    # plt.plot(range(2004, 2018), time_differences[:14])
+    # plt.title('Time-differenced data')
+    # plt.xlabel('Year')
+    # plt.ylim(-20000, 20000)
+    # plt.show()
