@@ -62,3 +62,7 @@ def get_baseline_acc_all(data):
     # plt.xlabel('Year')
     # plt.ylim(-20000, 20000)
     # plt.show()
+
+
+if __name__ == "__main__":
+    get_baseline_acc_all(hd["00-0000"])
