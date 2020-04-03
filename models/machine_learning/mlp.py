@@ -12,6 +12,24 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 #df = data.data.groupby(["YEAR",'AREA']).HOUSING_INDEX.sum().to_frame()
+def getWindows(data, nYears):
+    """
+        Given data and a number of years, stack the data horizontally and return new information
+    """
+    df_tmp = df.loc[df['YEAR'].between(yr, yr+5)] #get 5-year window of data
+#    df_tmp = df_tmp[df_tmp[lst].notnull()]
+    X = df_tmp[lst]
+    y = np.array(df_tmp.HOUSING_INDEX).ravel()
+    test = df.loc[(df['YEAR'] == yr+6)]
+    X_train, y_train, X_test, y_test = X,y,test[lst],np.array(test.HOUSING_INDEX).ravel()
+
+    model = MLPRegressor(learning_rate='adaptive',max_iter=1000,hidden_layer_sizes=(40,40))
+
+    model.fit(X_train,y_train)
+    print(f"For model starting at {yr}, accuracy is: {model.score(X_test,y_test)}")
+    
+
+
 
 occ_code = "00-0000"
 data = hd([occ_code])

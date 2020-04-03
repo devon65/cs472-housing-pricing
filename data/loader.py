@@ -104,7 +104,7 @@ class HousingDataset():
     def _slide_window(data:pd.DataFrame, window_size:int):
         first_year = data["YEAR"].min()
         last_year = data["YEAR"].max()
-        year_series = pd.DataFrame(range(first_year, last_year + 1), columns=["YEAR"]).set_index("YEAR")
+        year_series = pd.DataFrame(list(range(first_year, last_year + 1)), columns=["YEAR"]).set_index("YEAR")
         data_with_consecutive_years = data.set_index("YEAR").join(year_series, how="outer")
 
         for i in range(len(data_with_consecutive_years) - window_size):
