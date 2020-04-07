@@ -12,14 +12,23 @@ def regress_on_data(data:pd.DataFrame, independent_vars:[str], lag:int):
         Returns the difference between the prediction of the last
         element and the known value.
     """
-    x = data[independent_vars].to_numpy()
+    import pdb;
+    if lag > 0:
+        pdb.set_trace()
+    x = data[independent_vars].pct_change().to_numpy()
     if lag > 0:
         x = x[:-lag]
-    y = data["HOUSING_INDEX"].to_numpy()[lag:]
-    known_x = x[:-1]
-    known_y = y[:-1]
+
+    y = data["HOUSING_INDEX"].pct_change().to_numpy()[lag:]
+    housing_abs = data["HOUSING_INDEX"].to_numpy()[lag:]
+    known_x = x[1:-1]
+    known_y = y[1:-1]
     unknown_x = x[-1].reshape(1, -1)
     unknown_y = y[-1].item()
+    
+    last_val = housing_abs[-2].item()
+    actual_val = housing_abs[-1].item()
+
 
     poly = PolynomialFeatures(degree=len(independent_vars))
     known_x_t = poly.fit_transform(known_x)
@@ -28,7 +37,7 @@ def regress_on_data(data:pd.DataFrame, independent_vars:[str], lag:int):
     clf = linear_model.LinearRegression()
     pred = clf.fit(known_x_t, known_y).predict(unknown_x_t).item()
 
-    return pred - unknown_y
+    return (pred + 1) * last_val - actual_val
 
 def regress_on_all(occ_code:str, independent_columns:[str], lag:int):
     data = hd([occ_code])
